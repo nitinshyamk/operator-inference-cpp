@@ -1,0 +1,2 @@
+D:\Projects\operator-inference-cpp\operator-inference\x64\Debug\operator-inference.exe
+D:\Projects\operator-inference-cpp\operator-inference\x64\Debug\operator-inference.pdb
