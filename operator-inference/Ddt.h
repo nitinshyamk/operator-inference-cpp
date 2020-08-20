@@ -2,7 +2,6 @@
 #ifndef OPINF_DDTOP_H
 #define OPINF_DDTOP_H
 
-#
 #include <exception>
 
 #include "CudaGpuMatrix.h"
@@ -58,14 +57,14 @@ enum FDSchemeEnum
 	ForwardDifference4
 };
 
-class cuda_memory_error : public std::runtime_error
+class ddt_kernel_error : public std::runtime_error
 {
 public:
-	cuda_memory_error() : runtime_error("CUDA memory allocation or transfer failure") {}
+	ddt_kernel_error() : runtime_error("Discrete difference (temporal) ddt operation failured during kernel invocation or synchronization") {}
 
 	virtual const char* what() const throw()
 	{
-		return "CUDA memory allocation or transfer failure";
+		return "Discrete difference (temporal) ddt operation failured during kernel invocation or synchronization";
 	}
 };
 
@@ -129,7 +128,7 @@ __global__ void ddtKernel(
 			return;
 		default:
 			// cannot enter a default case with an unsupported enum scheme
-			assert(false);
+			//assert(false);
 			return;
 		}
 	}
@@ -190,8 +189,9 @@ public:
 		cuda_gpu_matrix ans(M, endind - startind + 1);
 		// invoke kernel on matrices
 		
-		dim3 gridDim((M + 31)/32, (endind - startind + 1 + 31)/32);
-		dim3 blockDim(32, 32);
+		size_t block1Dim = 1 << 5;
+		dim3 gridDim((M + block1Dim - 1)/ block1Dim, (endind - startind + block1Dim)/ block1Dim);
+		dim3 blockDim(block1Dim, block1Dim);
 
 		ddtKernel<FDScheme><<<gridDim, blockDim>>>(
 			this->dt,
@@ -202,9 +202,9 @@ public:
 			endind,
 			ans.gpuPtr.get());
 
-		checkCudaError<>(cudaGetLastError());
+		checkCudaError<ddt_kernel_error>(cudaGetLastError());
+		checkCudaError<ddt_kernel_error>(cudaDeviceSynchronize());
 
-		cudaError_t cudaStatus = cudaDeviceSynchronize();
 		return ans;
 	}
 

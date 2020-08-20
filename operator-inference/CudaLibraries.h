@@ -36,14 +36,9 @@ public:
 
 	cuda_libraries()
 	{
-		status code;
-		code = cublasCreate_v2(&blas_handle);
-		checkCudaOperationStatus<library_load_error>(code);
-		code = cublasLtCreate(&blaslt_handle);
-		checkCudaOperationStatus<library_load_error>(code);
-
-		cusparseStatus_t sp_code = cusparseCreate(&sparse_handle);
-		checkCudaOperationStatus<library_load_error>(sp_code);
+		checkCudaStatus<library_load_error>(cublasCreate_v2(&blas_handle));
+		checkCudaStatus<library_load_error>(cublasLtCreate(&blaslt_handle));
+		checkCudaStatus<library_load_error>(cusparseCreate(&sparse_handle));
 
 		std::cout << "Loaded CUDA libraries successfully." << std::endl;
 	}
@@ -56,17 +51,19 @@ public:
 		std::cout << "Closed connections to CUDA libraries." << std::endl;
 	}
 
-	const cublasHandle_t get_blas_handle()
+	cuda_libraries(const cuda_libraries& cpy) = delete;
+
+	const cublasHandle_t get_blas_handle() const
 	{
 		return blas_handle;
 	}
 
-	const cublasLtHandle_t get_blaslt_handle()
+	const cublasLtHandle_t get_blaslt_handle() const
 	{
 		return blaslt_handle;
 	}
 
-	const cusparseHandle_t get_sparse_handle()
+	const cusparseHandle_t get_sparse_handle() const
 	{
 		return sparse_handle;
 	}
